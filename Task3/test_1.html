@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Табличная разметка - Вариант 09</title>
+</head>
+<body>
+    <div>
+        <table border="1" cellpadding="8" cellspacing="0" width="100%">
+            <tr>
+                <th width="33%" id="addContactCell" style="cursor: pointer; background-color: #f0f0f0;" onmouseover="this.style.backgroundColor='#e0e0e0'" onmouseout="this.style.backgroundColor='#f0f0f0'">
+                        Добавить контакт
+                </th>
+                <th width="34%">
+                        САЙТ ВИЗИТКА
+                </th>
+                <th width="33%" id="deleteContactCell" style="cursor: pointer; background-color: #f0f0f0;" onmouseover="this.style.backgroundColor='#e0e0e0'" onmouseout="this.style.backgroundColor='#f0f0f0'">
+                        Удалить последний
+                </th>
+            </tr>
+            <tr>
+                <td width="33%">
+                        Это сайт визитка, который <br>демонстрирует работу с HTML
+                </td>
+                <td width="34%">
+                        <img src="html_picture.png">
+                </td>
+                <td width="33%">
+                        <ul>
+                    <li>Panargin vladislav, Kovrov artemka</li>
+                    <li>phone number</li>
+                    <li><a class="email-link" href = "mailto:kovorv_tema@mail.ru" >mail</a></li>
+                    <li><a href = "https://t.me/sinnerreal" >telegramm</a></li>
+                    <li><a href = "https://vk.com/gaknas" >vk</a></li>
+                    <li><a href="https://max.ru/">MAX</a></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td width = "33%">
+                    <ul>
+                    <li style="list-style-type: square;">туп</li>
+                    <li style="list-style-type: square;">жаден</li>
+                    <li style="list-style-type: square;">прожорлив</li>
+                    <li style="list-style-type: square;">ленив</li>
+                    <li style="list-style-type: square;">труслив</li>
+                    <li style="list-style-type: square;">надменен</li>
+                    <li style="list-style-type: square;">характер отсутствует</li>
+                    <li style="list-style-type: square;">не женат</li>
+                    </ul>
+                </td>
+                <td rowspan = "2" colspan = "2">
+                    <ol>
+                    <li >ctf</li>
+                    <li >hacaton</li>
+                    <li >car hack</li>
+                    <li >ai</li>
+                    
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td width = "33%">
+                <table border="1" cellpadding="8" cellspacing="0" width="100%">
+                    <tr><td>туп</td></tr>
+                    <tr><td>жаден</td></tr>
+                    <tr><td>прожорлив</td></tr>
+                    <tr><td>ленив</td></tr>
+                    <tr><td>труслив</td></tr>
+                    <tr><td>надменен</td></tr>
+                    <tr><td>характер отсутствует</td></tr>
+                    <tr><td>не женат</td></tr>
+                    
+                </table>    
+                </td>
+                
+            </tr>
+        </table>
+        
+        
+    </div>
+
+    <script>
+     
+        let addedContacts = [];
+        const maxNewContacts = 3;
+
+        const contactList = document.querySelector('td ul');
+        
+        function addContact() {
+            if (addedContacts.length >= maxNewContacts) {
+                alert('Максимальное количество новых контактов: ' + maxNewContacts);
+                return;
+            }
+            
+            const contactText = prompt('Введите текст нового контакта:');
+            
+            if (contactText && contactText.trim() !== '') {
+                const newListItem = document.createElement('li');
+                newListItem.textContent = contactText.trim();
+                newListItem.className = 'added-contact'; // Класс для идентификации добавленных контактов
+                
+                contactList.appendChild(newListItem);
+                
+                addedContacts.push(newListItem);
+                
+                console.log('Добавлен контакт:', contactText);
+            }
+        }
+        
+        function deleteLastContact() {
+            if (addedContacts.length > 0) {
+                const lastContact = addedContacts.pop();
+                
+                contactList.removeChild(lastContact);
+                
+                console.log('Удален контакт:', lastContact.textContent);
+            } else {
+                alert('Нет добавленных контактов для удаления');
+            }
+        }
+        
+        document.getElementById('addContactCell').addEventListener('mouseenter', addContact);
+        document.getElementById('deleteContactCell').addEventListener('mouseenter', deleteLastContact);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const originalContacts = contactList.querySelectorAll('li:not(.added-contact)');
+            originalContacts.forEach(contact => {
+                contact.className = 'original-contact';
+            });
+        });
+    </script>
+</body>
+</html>
