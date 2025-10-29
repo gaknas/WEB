@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script src="./vue.global.js"></script>
+
+        <div id="app">
+             <svg width="420" height="576" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100%" height="100%" fill="#f0f8ff" stroke="black" stroke-width="2" stroke-dasharray="2,2"/>
+                <text 
+                    :x="textPosition.x" 
+                    :y="textPosition.y" 
+                    text-anchor="middle" 
+                    dominant-baseline="middle"
+                    font-size="20"
+                    fill="#333"
+                >{{ textContent }}</text>
+            </svg>
+            <br>
+            <input 
+                type="text" 
+                v-model="textContent" 
+                placeholder="Введите текст для отображения в SVG"
+            >
+
+            <p>Текущая позиция: X={{ textPosition.x }}, Y={{ textPosition.y }}</p>
+        </div>
+        
+        <script>
+            const {createApp, ref, onMounted, onUnmounted} = Vue 
+
+            createApp({
+                setup() {
+                    const textContent = ref('Пример текста')
+                    const textPosition = ref({ x: 210, y: 288 })
+                    var shiftPressed = false
+
+                    const generateRandomPosition = () => {
+                        const minX = 5
+                        const maxX = 415
+                        const minY = 5
+                        const maxY = 571
+                        
+                        return {
+                            x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+                            y: Math.floor(Math.random() * (maxY - minY + 1)) + minY
+                        };
+                    };
+                    textPosition.value = generateRandomPosition()
+
+                    const handleKeyDown = (event) => {
+                        if (event.key === 'Shift') {
+                            shiftPressed = true
+                            return
+                        }
+
+                        console.log(shiftPressed)
+                        
+                        const direction = shiftPressed ? -1 : 1
+                        const step = 5
+                        
+                        if (event.key === ' ') {
+                            event.preventDefault()
+                            const newX = textPosition.value.x + (step * direction)
+                            
+                            if (newX >= 5 && newX <= 415) {
+                                textPosition.value.x = newX
+                            }
+                        } else if (event.key === 'Enter') {
+                            event.preventDefault()
+                            const newY = textPosition.value.y + (step * direction)
+                            
+                            if (newY >= 5 && newY <= 571) {
+                                textPosition.value.y = newY
+                            }
+                        }
+                    };
+
+                    function handleKeyUp(event) {
+                        if (event.key === 'Shift') {
+                            shiftPressed = false;
+                        }
+                    }
+
+                    onMounted(() => {
+                        window.addEventListener('keydown', handleKeyDown);
+                        window.addEventListener('keyup', handleKeyUp);
+                    });
+                    
+                    // Удаление обработчиков событий
+                    onUnmounted(() => {
+                        window.removeEventListener('keydown', handleKeyDown);
+                        window.removeEventListener('keyup', handleKeyUp);
+                    });
+
+                    return {
+                        textContent,
+                        textPosition
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>

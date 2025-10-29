@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script src="./vue.global.js"></script>
+
+        <div id="app">
+            <p>
+                <font   :face="fnt_face"
+                        :size="fnt_size"
+                        :color="fnt_color">
+                    {{ message }}
+                </font>
+            </p>
+        </div>
+        
+        <script>
+            const {createApp} = Vue 
+
+            createApp({
+                setup() {
+                    const message = "Hello world!"
+                    const fnt_face = "Courier New"
+                    const fnt_size = "3"
+                    const fnt_color = "navy"
+
+                    return {
+                        message,
+                        fnt_face,
+                        fnt_size,
+                        fnt_color
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>
