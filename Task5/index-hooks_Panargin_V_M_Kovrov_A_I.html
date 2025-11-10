@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script src="./vue.global.js"></script>
+
+        <div id="app">
+            <ol>
+                <li v-for="row in arr">{{ row.toString() }}</li>
+            </ol>
+            <input v-model="text" @keydown.ctrl.enter="add_row" @keydown.shift.enter="delete_row">
+        </div>
+        
+        <script>
+            const {createApp, ref} = Vue 
+
+            createApp({
+                setup() {
+                    arr = ref([[1,2,3],[4,5,6],[7,8,9]])
+
+                    text = ref('')
+
+                    function add_row() {
+                        new_row = text.value.split(",")
+                        arr.value.push(new_row)
+                    }
+                    
+                    function delete_row() {
+                        arr.value.pop()
+                    }
+
+                    return {
+                        arr,
+                        text,
+                        add_row,
+                        delete_row
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>

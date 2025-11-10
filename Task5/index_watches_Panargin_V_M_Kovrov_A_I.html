@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <script src="./vue.global.js"></script>
+
+        <div id="app">
+            <input v-model="text">
+        </div>
+        
+        <script>
+            const {createApp, ref, watch} = Vue 
+
+            createApp({
+                setup() {
+                    amount = prompt("Введите количество попыток")
+                    text = ref('')
+                    fixedValue=""
+                    flag=false
+
+                    function foo() {
+                        amount -= 1
+                        alert(`Ввод будет заблокирован через ${amount} попыток`)
+                    }
+
+                    watch(text, async (newText, oldText) => {
+                        if (flag && (newText != fixedValue)) {
+                            text.value = oldText
+                        }
+                        else if (/\d/.test(newText)) {
+                            console.log("NUM")
+                            amount -= 1
+                            if (amount==0) {
+                                fixedValue = oldText
+                                flag=true
+                                alert(`Ввод заблокирован`)
+                            }
+                            else {
+                                alert(`Ввод будет заблокирован через ${amount} попыток`)
+                            }
+                            text.value = oldText
+                        }
+                    })
+
+                    function new_value(e) {
+                        if (/^\d+$/.test(e.key)) {
+                            e.preventDefault()
+                            amount -= 1
+                            alert(`Ввод будет заблокирован через ${amount} попыток`)
+                        }
+                    }
+
+                    const message = "Hello world!"
+
+                    return {
+                        foo,
+                        new_value,
+                        text
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>
