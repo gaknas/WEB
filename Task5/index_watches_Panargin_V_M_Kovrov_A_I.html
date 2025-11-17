@@ -7,7 +7,12 @@
         <script src="./vue.global.js"></script>
 
         <div id="app">
-            <input v-model="text">
+            <svg :width="width" :height="height" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100%" height="100%" fill="white" stroke="black"/>
+            </svg>
+            <br>
+            <input v-model="width">
+            <input v-model="height">
         </div>
         
         <script>
@@ -15,49 +20,26 @@
 
             createApp({
                 setup() {
-                    amount = prompt("Введите количество попыток")
-                    text = ref('')
-                    fixedValue=""
-                    flag=false
+                    width = ref(160)
+                    height = ref(90)
 
-                    function foo() {
-                        amount -= 1
-                        alert(`Ввод будет заблокирован через ${amount} попыток`)
-                    }
-
-                    watch(text, async (newText, oldText) => {
-                        if (flag && (newText != fixedValue)) {
-                            text.value = oldText
-                        }
-                        else if (/\d/.test(newText)) {
-                            console.log("NUM")
-                            amount -= 1
-                            if (amount==0) {
-                                fixedValue = oldText
-                                flag=true
-                                alert(`Ввод заблокирован`)
-                            }
-                            else {
-                                alert(`Ввод будет заблокирован через ${amount} попыток`)
-                            }
-                            text.value = oldText
+                    watch(width, () => {
+                        console.log("width changed")
+                        if (Math.abs(height.value * 16 - width.value * 9) >= 0.1) {
+                            height.value = (width.value / 16) * 9
                         }
                     })
 
-                    function new_value(e) {
-                        if (/^\d+$/.test(e.key)) {
-                            e.preventDefault()
-                            amount -= 1
-                            alert(`Ввод будет заблокирован через ${amount} попыток`)
+                    watch(height, () => {
+                        console.log("height changed")
+                        if (Math.abs(height.value * 16 - width.value * 9) >= 0.1) {
+                            width.value = (height.value / 9) * 16
                         }
-                    }
-
-                    const message = "Hello world!"
+                    })
 
                     return {
-                        foo,
-                        new_value,
-                        text
+                        width,
+                        height
                     }
                 }
             }).mount('#app')

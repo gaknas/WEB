@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 800px;
+            }
+
+            td {
+                width: 199px;
+            }
+            .input-container {
+                width: 800px;
+            }
+            input {
+                width: 192px
+            }
+        </style>
+    </head>
+    <body>
+        <script src="./vue.global.js"></script>
+
+        <div id="app">
+            <table border=1>
+                <tr v-for="good in goods">
+                    <td>{{ good.label }}</td>
+                    <td>{{ good.maker }}</td>
+                    <td>{{ good.quantity }}</td>
+                    <td>{{ good.price }}</td>
+                </tr>
+            </table>
+            <br><br><br>
+            <div class="input-container">
+                <input v-model="input_values.label" @keydown.enter="add_row">
+                <input v-model="input_values.maker" @keydown.enter="add_row">
+                <input v-model="input_values.quantity" @keydown.enter="add_row">
+                <input v-model="input_values.price" @keydown.enter="add_row">
+            </div>
+        </div>
+        
+        <script>
+            const {createApp, ref} = Vue 
+
+            createApp({
+                setup() {
+                    goods = ref([{
+                        label: "Наименование",
+                        maker: "Производитель",
+                        quantity: "Количество",
+                        price: "Цена"
+                    }])
+
+                    input_values = ref({
+                        label: "",
+                        maker: "",
+                        quantity: "",
+                        price: ""
+                    })
+
+                    function add_row() {
+                        new_row = {
+                            label: "-----",
+                            maker: "-----",
+                            quantity: "0",
+                            price: "0"
+                        }
+                        for (key in input_values.value) {
+                            if (input_values.value[key] != "") new_row[key] = input_values.value[key]
+                        }
+                        goods.value.push(new_row)
+                        for (key in input_values.value) {
+                            input_values.value[key] = ""
+                        }
+                    }
+
+                    return {
+                        goods,
+                        input_values,
+                        add_row
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>
