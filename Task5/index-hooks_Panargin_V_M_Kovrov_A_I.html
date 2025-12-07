@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <script src="./vue.global.js"></script>
+    <style>
+        .coordinates-info {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .axis-label {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            fill: #2c3e50;
+        }
+        .grid-line {
+            stroke: #e0e0e0;
+            stroke-width: 1;
+        }
+        .axis-line {
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+        .tick-mark {
+            stroke: #2c3e50;
+            stroke-width: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="svg-border">
+            <svg :width="svgWidth" :height="svgHeight" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100%" height="100%" fill="#f0f8ff" />
+
+                <!-- Сетка -->
+                <g v-for="x in gridLines" :key="'x'+x">
+                    <line 
+                        :x1="padding.left + x * gridSize" 
+                        :y1="padding.top" 
+                        :x2="padding.left + x * gridSize" 
+                        :y2="svgHeight - padding.bottom" 
+                        class="grid-line"
+                    />
+                </g>
+                <g v-for="y in gridLines" :key="'y'+y">
+                    <line 
+                        :x1="padding.left" 
+                        :y1="padding.top + y * gridSize" 
+                        :x2="svgWidth - padding.right" 
+                        :y2="padding.top + y * gridSize" 
+                        class="grid-line"
+                    />
+                </g>
+                
+                <!-- Координатные оси -->
+                <!-- Ось X -->
+                <line 
+                    :x1="padding.left" 
+                    :y1="svgHeight - padding.bottom" 
+                    :x2="svgWidth - padding.right" 
+                    :y2="svgHeight - padding.bottom" 
+                    class="axis-line"
+                />
+                <!-- Ось Y -->
+                <line 
+                    :x1="padding.left" 
+                    :y1="padding.top" 
+                    :x2="padding.left" 
+                    :y2="svgHeight - padding.bottom" 
+                    class="axis-line"
+                />
+                
+                <!-- Деления на оси X -->
+                <g v-for="(tick, index) in xTicks" :key="'xtick'+index">
+                    <line 
+                        :x1="padding.left + tick.position" 
+                        :y1="svgHeight - padding.bottom" 
+                        :x2="padding.left + tick.position" 
+                        :y2="svgHeight - padding.bottom + 5" 
+                        class="tick-mark"
+                    />
+                    <text 
+                        :x="padding.left + tick.position" 
+                        :y="svgHeight - padding.bottom + 15" 
+                        text-anchor="middle" 
+                        class="axis-label"
+                    >
+                        {{ tick.value }}
+                    </text>
+                </g>
+                
+                <!-- Деления на оси Y -->
+                <g v-for="(tick, index) in yTicks" :key="'ytick'+index">
+                    <line 
+                        :x1="padding.left" 
+                        :y1="padding.top + tick.position" 
+                        :x2="padding.left - 5" 
+                        :y2="padding.top + tick.position" 
+                        class="tick-mark"
+                    />
+                    <text 
+                        :x="padding.left - 10" 
+                        :y="padding.top + tick.position + 3" 
+                        text-anchor="end" 
+                        class="axis-label"
+                    >
+                        {{ tick.value }}
+                    </text>
+                </g>
+                
+                <!-- Подписи осей -->
+                <text 
+                    :x="svgWidth - padding.right + 10" 
+                    :y="svgHeight - padding.bottom - 5" 
+                    class="axis-label"
+                    font-weight="bold"
+                >
+                    X
+                </text>
+                <text 
+                    :x="padding.left + 5" 
+                    :y="padding.top - 10" 
+                    class="axis-label"
+                    font-weight="bold"
+                >
+                    Y
+                </text>
+                
+                <rect 
+                    :x="square.x" 
+                    :y="square.y" 
+                    :width="square.size" 
+                    :height="square.size"
+                    :fill="square.color"
+                />
+            </svg>
+        </div>
+        <div class="controls">
+            <button @click="changeSquareColor">Изменить цвет</button>
+        </div>
+            
+        <h3>Лог выполнения витков:</h3>
+        <div v-for="(log, index) in lifecycleLogs">
+            {{ log }}
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted } = Vue;
+        
+        createApp({
+            setup() {
+                square = ref({
+                    x: 0,
+                    y: 0,
+                    size: 0,
+                    color: ''
+                });
+
+                // Размеры SVG
+                const svgWidth = ref(600);
+                const svgHeight = ref(400);
+                
+                // Отступы для осей
+                const padding = ref({
+                    top: 40,
+                    right: 40,
+                    bottom: 40,
+                    left: 60
+                });
+                
+                // Настройки координатной системы
+                const gridSize = ref(20);
+                const ticksStep = ref(50);
+                
+                // Вычисляемые свойства для сетки и делений
+                const gridLines = computed(() => {
+                    const maxX = Math.floor((svgWidth.value - padding.value.left - padding.value.right) / gridSize.value);
+                    const maxY = Math.floor((svgHeight.value - padding.value.top - padding.value.bottom) / gridSize.value);
+                    return Array.from({length: Math.max(maxX, maxY)}, (_, i) => i);
+                });
+                
+                const xTicks = computed(() => {
+                    const ticks = [];
+                    const maxTicks = Math.floor((svgWidth.value - padding.value.left - padding.value.right) / ticksStep.value);
+                    
+                    for (let i = 0; i <= maxTicks; i++) {
+                        ticks.push({
+                            position: i * ticksStep.value,
+                            value: i * ticksStep.value
+                        });
+                    }
+                    return ticks;
+                });
+                
+                const yTicks = computed(() => {
+                    const ticks = [];
+                    const maxTicks = Math.floor((svgHeight.value - padding.value.top - padding.value.bottom) / ticksStep.value);
+                    
+                    for (let i = 0; i <= maxTicks; i++) {
+                        ticks.push({
+                            position: i * ticksStep.value,
+                            value: i * ticksStep.value
+                        });
+                    }
+                    return ticks;
+                });
+                
+                lifecycleLogs = ref([]);
+                updateFlag = ref(false)
+                initial_ms = Date.now()
+
+                logHook = (hookName, data = null) => {
+                    timestamp = Date.now()-initial_ms;
+                    let message = `[${timestamp} ms] ${hookName} вызван`;
+                    if (data) {
+                        message += `, данные: ${JSON.stringify(data)}`;
+                    }
+                    lifecycleLogs.value.push(message);
+                };
+
+                logHook('created', { 
+                    square: { x: 0, y: 0, size: 0, color: ''} 
+                });
+
+                onBeforeMount(() => {
+                    // Подготовка SVG элемента - установка начальных значений
+                    square.value = {
+                        x: 50,
+                        y: 50,
+                        size: 100,
+                        color: '#3498db'
+                    };
+                    logHook('beforeMount', square.value);
+                });
+                
+                // mounted - вызывается после монтирования
+                onMounted(() => {
+                    // Дополнительная настройка после отрисовки DOM
+                    square.value = {
+                        x: 100,
+                        y: 100,
+                        size: 100,
+                        color: '#e74c3c'
+                    };
+                    logHook('mounted', square.value);
+                });
+                
+                // beforeUpdate - вызывается перед обновлением DOM
+                onBeforeUpdate(() => {
+                    if (!updateFlag.value) {
+                        logHook('beforeUpdate');
+                    }
+                });
+                
+                // updated - вызывается после обновления DOM
+                onUpdated(() => {
+                    if (!updateFlag.value) {
+                        updateFlag.value = true
+                        logHook('updated');
+                        setTimeout(() => {
+                            updateFlag.value = false
+                        }, 0)
+                    }
+                });
+                
+                // beforeUnmount - вызывается перед размонтированием
+                onBeforeUnmount(() => {
+                    logHook('beforeUnmount');
+                });
+                
+                // unmounted - вызывается после размонтирования
+                onUnmounted(() => {
+                    logHook('unmounted');
+                });
+                
+                // Методы для изменения квадрата
+                const changeSquareColor = () => {
+                    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+                    square.value.color = colors[Math.floor(Math.random() * colors.length)];
+                    square.value.borderColor = '#2c3e50';
+                };
+                
+                return {
+                    svgWidth,
+                    svgHeight,
+                    padding,
+                    gridSize,
+                    ticksStep,
+                    square,
+                    gridLines,
+                    xTicks,
+                    yTicks,
+                    lifecycleLogs,
+                    changeSquareColor,
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
